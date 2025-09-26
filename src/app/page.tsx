@@ -1,9 +1,11 @@
 'use client'
 
-import { useState, useEffect, useRef, useCallback } from 'react'
+import { useState, useEffect, useRef, useCallback, memo } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import mapboxgl from 'mapbox-gl'
 import 'mapbox-gl/dist/mapbox-gl.css'
+import './efb-animations.css'
+import { ErrorBoundary } from '@/components/ErrorBoundary'
 import { 
   LOCATIONS, 
   CAMERA_POSITIONS,
@@ -76,11 +78,13 @@ const donationPhases: DonationPhase[] = [
   }
 ]
 
-export default function EgyptianFoodBankTracker() {
+const EgyptianFoodBankTracker = memo(function EgyptianFoodBankTracker() {
   const mapContainer = useRef<HTMLDivElement>(null)
   const map = useRef<mapboxgl.Map | null>(null)
   const [currentStage, setCurrentStage] = useState(0)
   const [phases, setPhases] = useState(donationPhases)
+  const [isMapLoading, setIsMapLoading] = useState(true)
+  const [mapError, setMapError] = useState<string | null>(null)
   const [animationState, setAnimationState] = useState<AnimationState>({
     isAnimating: false,
     currentStage: 0,
@@ -116,14 +120,20 @@ export default function EgyptianFoodBankTracker() {
 
     map.current.on('load', () => {
         console.log('Map loaded successfully')
+        setIsMapLoading(false)
+        setMapError(null)
       })
 
       map.current.on('error', (e) => {
         console.error('Mapbox error:', e)
+        setMapError('Failed to load map. Please refresh the page.')
+        setIsMapLoading(false)
       })
 
     } catch (err) {
       console.error('Map initialization error:', err)
+      setMapError('Failed to initialize map. Please refresh the page.')
+      setIsMapLoading(false)
     }
   }, [])
 
@@ -538,48 +548,89 @@ export default function EgyptianFoodBankTracker() {
     console.log('Transitioning paths to green')
   }
 
+  // Loading state
+  if (isMapLoading) {
+    return (
+      <div className="fixed inset-0 w-full h-full bg-black flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-500 mx-auto mb-4"></div>
+          <p className="text-white text-lg">Initializing Egyptian Food Bank Tracking System...</p>
+        </div>
+      </div>
+    )
+  }
+
+  // Error state
+  if (mapError) {
+    return (
+      <div className="fixed inset-0 w-full h-full bg-black flex items-center justify-center">
+        <div className="text-center max-w-md mx-auto p-8">
+          <div className="text-red-500 text-6xl mb-4">⚠️</div>
+          <h1 className="text-white text-xl font-bold mb-4">System Error</h1>
+          <p className="text-gray-300 mb-6">{mapError}</p>
+          <button 
+            onClick={() => window.location.reload()}
+            className="bg-green-500 hover:bg-green-600 text-white px-6 py-2 rounded-lg transition-colors"
+          >
+            Retry
+          </button>
+        </div>
+      </div>
+    )
+  }
+
   return (
-    <div className="w-screen h-screen bg-black overflow-hidden relative">
+    <div className="fixed inset-0 w-full h-full bg-black overflow-hidden">
       {/* Map Container - Full Viewport */}
       <div 
         ref={mapContainer} 
         className="absolute inset-0 w-full h-full"
-        style={{ width: '100vw', height: '100vh' }}
+        role="img"
+        aria-label="Egyptian Food Bank donation tracking map"
       />
 
       {/* EFB Logo Panel - Top Left */}
-      <div className="absolute top-24 left-24 w-48 z-10">
-        <div className="bg-white/10 backdrop-blur-sm rounded-lg p-4 border border-white/20">
-          <div className="flex items-center gap-3 mb-2">
-            <div className="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center">
-              <span className="text-white font-bold text-sm">EFB</span>
+      <div className="absolute top-6 left-6 md:top-24 md:left-24 w-40 md:w-48 z-10">
+        <div className="bg-white/10 backdrop-blur-sm rounded-lg p-3 md:p-4 border border-white/20">
+          <div className="flex items-center gap-2 md:gap-3 mb-2">
+            <div className="w-6 h-6 md:w-8 md:h-8 bg-green-500 rounded-full flex items-center justify-center">
+              <span className="text-white font-bold text-xs md:text-sm">EFB</span>
             </div>
             <div>
-              <h1 className="text-white font-bold text-lg">EFB</h1>
+              <h1 className="text-white font-bold text-base md:text-lg">EFB</h1>
               <p className="text-gray-400 text-xs uppercase tracking-wider">OPERATIONAL NETWORK</p>
+            </div>
           </div>
         </div>
-              </div>
-            </div>
+      </div>
 
       {/* Processing Pipeline Panel - Top Right */}
-      <div className="absolute top-24 right-24 w-80 z-10">
+      <div className="absolute top-6 right-6 md:top-24 md:right-24 w-72 md:w-80 z-10">
         <div 
-          className="rounded-lg p-4 border border-white/20"
+          className="rounded-lg p-3 md:p-4 border border-white/20"
           style={{ backgroundColor: COLORS.PANEL_BG }}
         >
           <h2 className="text-white font-bold text-sm mb-4 uppercase tracking-wider">PROCESSING PIPELINE</h2>
-          <div className="space-y-2">
+          <div className="space-y-2" role="list" aria-label="Donation processing stages">
                   {phases.map((phase, index) => (
               <motion.div
-                key={phase.id}
-                className={`flex items-center gap-3 p-2 rounded cursor-pointer transition-all duration-200 ${
+                      key={phase.id} 
+                role="listitem"
+                tabIndex={phase.isClickable ? 0 : -1}
+                className={`flex items-center gap-3 p-2 rounded cursor-pointer transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 ${
                   phase.isClickable 
                     ? 'hover:bg-white/10' 
                     : 'cursor-not-allowed opacity-50'
                 }`}
                 onClick={() => phase.isClickable && executeStage(index)}
+                onKeyDown={(e) => {
+                  if (phase.isClickable && (e.key === 'Enter' || e.key === ' ')) {
+                    e.preventDefault()
+                    executeStage(index)
+                  }
+                }}
                 whileHover={phase.isClickable ? { scale: 1.02 } : {}}
+                aria-label={`Stage ${phase.id}: ${phase.title}. ${phase.isClickable ? 'Click to execute' : 'Not available'}`}
               >
                 <div 
                   className={`w-2 h-2 rounded-full transition-all duration-300 ${
@@ -609,9 +660,9 @@ export default function EgyptianFoodBankTracker() {
             </div>
 
       {/* Operational Status Panel - Bottom Left */}
-      <div className="absolute bottom-24 left-24 w-96 z-10">
+      <div className="absolute bottom-6 left-6 md:bottom-24 md:left-24 w-80 md:w-96 z-10">
         <div 
-          className="rounded-lg p-4 border border-white/20"
+          className="rounded-lg p-3 md:p-4 border border-white/20"
           style={{ backgroundColor: COLORS.PANEL_BG }}
         >
           <h2 className="text-white font-bold text-sm mb-4 uppercase tracking-wider">OPERATIONAL</h2>
@@ -623,6 +674,9 @@ export default function EgyptianFoodBankTracker() {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -10 }}
               transition={{ duration: 0.3 }}
+              role="status"
+              aria-live="polite"
+              aria-label="Current operational status"
             >
               {phases[currentStage]?.operationalText || phases[0].operationalText}
             </motion.p>
@@ -631,26 +685,26 @@ export default function EgyptianFoodBankTracker() {
           </div>
           
       {/* Network Analytics Panel - Bottom Right */}
-      <div className="absolute bottom-24 right-24 w-60 z-10">
+      <div className="absolute bottom-6 right-6 md:bottom-24 md:right-24 w-56 md:w-60 z-10">
         <div 
-          className="rounded-lg p-4 border border-white/20"
+          className="rounded-lg p-3 md:p-4 border border-white/20"
           style={{ backgroundColor: COLORS.PANEL_BG }}
         >
           <h2 className="text-white font-bold text-sm mb-4 uppercase tracking-wider">NETWORK ANALYTICS</h2>
-          <div className="space-y-3">
-            <div className="flex justify-between items-center">
+          <div className="space-y-3" role="list" aria-label="Network performance metrics">
+            <div className="flex justify-between items-center" role="listitem">
               <span className="text-gray-400 text-xs">TOTAL</span>
               <span className="text-white font-bold">$1.2K</span>
             </div>
-            <div className="flex justify-between items-center">
+            <div className="flex justify-between items-center" role="listitem">
               <span className="text-gray-400 text-xs">INPUTS</span>
               <span className="text-white font-bold">25</span>
             </div>
-            <div className="flex justify-between items-center">
+            <div className="flex justify-between items-center" role="listitem">
               <span className="text-gray-400 text-xs">TARGETS</span>
               <span className="text-white font-bold">200+</span>
             </div>
-            <div className="flex justify-between items-center">
+            <div className="flex justify-between items-center" role="listitem">
               <span className="text-gray-400 text-xs">EFFICIENCY</span>
               <span className="text-green-500 font-bold">+15%</span>
               </div>
@@ -658,36 +712,14 @@ export default function EgyptianFoodBankTracker() {
           </div>
         </div>
 
-      {/* Global Animation Styles */}
-      <style jsx global>{`
-        @keyframes pulse {
-          0% { transform: scale(1); opacity: 1; }
-          50% { transform: scale(1.2); opacity: 0.8; }
-          100% { transform: scale(1); opacity: 1; }
-        }
-        
-        @keyframes rotate {
-          from { transform: rotate(0deg); }
-          to { transform: rotate(360deg); }
-        }
-        
-        @keyframes scaleIn {
-          0% { transform: scale(0); }
-          100% { transform: scale(1); }
-        }
-        
-        .marker-pulse {
-          animation: pulse 1s infinite;
-        }
-        
-        .marker-rotate {
-          animation: rotate 2s linear infinite;
-        }
-        
-        .marker-star {
-          animation: scaleIn 0.5s ease-in-out;
-        }
-      `}</style>
     </div>
+  )
+})
+
+export default function EgyptianFoodBankTrackerWithErrorBoundary() {
+  return (
+    <ErrorBoundary>
+      <EgyptianFoodBankTracker />
+    </ErrorBoundary>
   )
 }

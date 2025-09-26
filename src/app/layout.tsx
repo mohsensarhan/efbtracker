@@ -14,21 +14,22 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Z.ai Code Scaffold - AI-Powered Development",
-  description: "Modern Next.js scaffold optimized for AI-powered development with Z.ai. Built with TypeScript, Tailwind CSS, and shadcn/ui.",
-  keywords: ["Z.ai", "Next.js", "TypeScript", "Tailwind CSS", "shadcn/ui", "AI development", "React"],
-  authors: [{ name: "Z.ai Team" }],
+  title: "Egyptian Food Bank - Donor Tracking Platform",
+  description: "Ultra-precise donation tracking system for the Egyptian Food Bank. Track your contribution from collection to family delivery with military-grade precision.",
+  keywords: ["Egyptian Food Bank", "Donation Tracking", "Food Security", "Egypt", "Charity", "Transparency"],
+  authors: [{ name: "Egyptian Food Bank" }],
+  viewport: "width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no",
   openGraph: {
-    title: "Z.ai Code Scaffold",
-    description: "AI-powered development with modern React stack",
-    url: "https://chat.z.ai",
-    siteName: "Z.ai",
+    title: "Egyptian Food Bank - Donor Tracking Platform",
+    description: "Track your donation with precision from collection to delivery",
+    url: "https://efbtracker.com",
+    siteName: "Egyptian Food Bank",
     type: "website",
   },
   twitter: {
     card: "summary_large_image",
-    title: "Z.ai Code Scaffold",
-    description: "AI-powered development with modern React stack",
+    title: "Egyptian Food Bank - Donor Tracking Platform",
+    description: "Track your donation with precision from collection to delivery",
   },
 };
 

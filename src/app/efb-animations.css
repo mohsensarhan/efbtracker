@@ -1,0 +1,135 @@
+/* Egyptian Food Bank Tracking Platform - Animation Styles */
+
+/* Keyframe Animations */
+@keyframes pulse {
+  0% { 
+    transform: scale(1); 
+    opacity: 1; 
+  }
+  50% { 
+    transform: scale(1.2); 
+    opacity: 0.8; 
+  }
+  100% { 
+    transform: scale(1); 
+    opacity: 1; 
+  }
+}
+
+@keyframes rotate {
+  from { 
+    transform: rotate(0deg); 
+  }
+  to { 
+    transform: rotate(360deg); 
+  }
+}
+
+@keyframes scaleIn {
+  0% { 
+    transform: scale(0); 
+  }
+  100% { 
+    transform: scale(1); 
+  }
+}
+
+@keyframes fadeIn {
+  from { 
+    opacity: 0; 
+  }
+  to { 
+    opacity: 1; 
+  }
+}
+
+@keyframes slideInUp {
+  from { 
+    transform: translateY(20px); 
+    opacity: 0; 
+  }
+  to { 
+    transform: translateY(0); 
+    opacity: 1; 
+  }
+}
+
+/* Marker Animation Classes */
+.marker-pulse {
+  animation: pulse 1s infinite;
+  will-change: transform, opacity;
+}
+
+.marker-rotate {
+  animation: rotate 2s linear infinite;
+  will-change: transform;
+}
+
+.marker-star {
+  animation: scaleIn 0.5s ease-in-out;
+  will-change: transform;
+}
+
+.marker-fade-in {
+  animation: fadeIn 0.3s ease-in-out;
+  will-change: opacity;
+}
+
+.marker-slide-up {
+  animation: slideInUp 0.4s ease-out;
+  will-change: transform, opacity;
+}
+
+/* Performance Optimizations */
+.mapboxgl-canvas {
+  will-change: transform;
+}
+
+/* Panel Animations */
+.panel-fade-in {
+  animation: fadeIn 0.5s ease-in-out;
+}
+
+.panel-slide-in {
+  animation: slideInUp 0.6s ease-out;
+}
+
+/* Accessibility - Reduce Motion */
+@media (prefers-reduced-motion: reduce) {
+  .marker-pulse,
+  .marker-rotate,
+  .marker-star,
+  .marker-fade-in,
+  .marker-slide-up,
+  .panel-fade-in,
+  .panel-slide-in {
+    animation: none;
+  }
+  
+  .marker-pulse,
+  .marker-rotate,
+  .marker-star {
+    transform: none;
+  }
+}
+
+/* High Contrast Mode Support */
+@media (prefers-contrast: high) {
+  .marker-pulse,
+  .marker-rotate,
+  .marker-star {
+    border: 3px solid white;
+    box-shadow: 0 0 0 2px black;
+  }
+}
+
+/* Print Styles */
+@media print {
+  .marker-pulse,
+  .marker-rotate,
+  .marker-star {
+    animation: none;
+    background: black !important;
+    border: 2px solid black !important;
+  }
+}
